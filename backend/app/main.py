@@ -1,15 +1,15 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 import uvicorn
 import os
 
-from app.database import init_db, engine
+from app.database import init_db
 
 app = FastAPI(
-    title="BookGuard 珍贵图书数字化保护系统",
-    description="基于 UmiOCR 的手写文字识别与珍贵图书数字化保护平台",
+    title="BookGuard",
+    description="BookGuard",
     version="1.0.0",
 )
 
@@ -50,6 +50,8 @@ if os.path.isdir(STATIC_DIR):
 
     @app.get("/{path:path}")
     async def serve_spa(path: str):
+        if path.startswith("api/") or path.startswith("docs") or path.startswith("openapi.json"):
+            return JSONResponse(status_code=404, content={"detail": "Not Found"})
         file_path = os.path.join(STATIC_DIR, path)
         if os.path.isfile(file_path):
             return FileResponse(file_path)
@@ -58,4 +60,4 @@ if os.path.isdir(STATIC_DIR):
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))
-    uvicorn.run("app.main:app", host="127.0.0.1", port=port, reload=True)
+    uvicorn.run("app.main:app", host="127.0.0.1", port=port)

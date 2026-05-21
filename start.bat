@@ -1,34 +1,34 @@
 @echo off
-chcp 65001 >nul
-echo ========================================
-echo   BookGuard 珍贵图书数字化保护系统
-echo   启动中...
-echo ========================================
-echo.
+chcp 936 >nul 2>nul
+title BookGuard
 
-echo [1/3] 启动后端服务...
-start "BookGuard-Backend" cmd /k "cd /d %~dp0backend && pip install -r requirements.txt -q && python -m app.main"
-timeout /t 5 /nobreak >nul
+cd /d %~dp0backend
 
-echo [2/3] 安装前端依赖...
-cd /d %~dp0frontend
-if not exist node_modules (
-    echo 首次运行，安装前端依赖...
-    call npm install
+if not exist "venv\Scripts\python.exe" (
+    echo [1/3] Creating virtual environment...
+    python -m venv venv
+    if errorlevel 1 (
+        echo [ERROR] Failed to create virtual environment
+        pause
+        exit /b 1
+    )
+) else (
+    echo [1/3] Virtual environment exists
 )
 
-echo [3/3] 启动前端服务...
-start "BookGuard-Frontend" cmd /k "cd /d %~dp0frontend && npm run dev"
+set PY=venv\Scripts\python.exe
 
+echo [2/3] Installing dependencies...
+"%PY%" -m pip install -r requirements.txt -q 2>nul
+echo Done.
+
+echo [3/3] Starting server...
 echo.
-echo ========================================
-echo   系统已启动！
-echo   前端地址: http://localhost:3000
-echo   后端地址: http://localhost:8000
-echo   API文档:  http://localhost:8000/docs
+echo ================================
+echo   Open: http://localhost:8000
+echo   Login: admin / admin123
+echo   Press Ctrl+C to stop
+echo ================================
 echo.
-echo   请确保 UmiOCR 已启动并开启 HTTP 服务
-echo   UmiOCR 默认地址: http://127.0.0.1:1224
-echo ========================================
-echo.
+"%PY%" -m app.main
 pause
